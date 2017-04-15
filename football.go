@@ -2,21 +2,41 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
+
+const GAMETIME int = 60
 
 func main() {
 	setupTeams()
-
-	fmt.Println("Playing for the ", stallions.TeamName)
-	for _, player := range stallions.Players {
-		fmt.Println("Introducing", player.Name)
-	}
-
 	fmt.Println("Ready for kickoff!")
 	fmt.Println("The", stallions.TeamName, "vs The", mustangs.TeamName, ". Should be a good one!")
+
+	ticks := 0
+
+	for ticks < GAMETIME {
+		snapTheBall()
+		time.Sleep(1 * time.Second)
+		ticks++
+	}
+
+}
+
+func snapTheBall() {
+	go doOffense()
+	go doDefense()
+}
+
+func doOffense() {
+	fmt.Println("Go long!")
+}
+
+func doDefense() {
+	fmt.Println("Stop them!")
 }
 
 func setupTeams() {
+
 	// stallions first
 	for i := 0; i < 11; i++ {
 		player := Player{Number: i}
