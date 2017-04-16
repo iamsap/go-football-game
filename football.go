@@ -71,14 +71,12 @@ func handlePlayerChannel(players <-chan Player) {
 }
 
 func snapTheBall() {
-	fmt.Println("Players", stallions.Players)
-
-	go doOffense(stallions.Players)
+	go doOffense()
 	go doDefense()
 }
 
-func doOffense(players [11]Player) {
-	for _, player := range players {
+func doOffense() {
+	for _, player := range stallions.Players {
 		playerChan <- player
 	}
 }
