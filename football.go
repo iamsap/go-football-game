@@ -45,11 +45,13 @@ var defPos = map[int]int{
 	10: DB,
 }
 
-var playerChan = make(chan Player)
+var offPlayerChan = make(chan Player)
+var defPlayerChan = make(chan Player)
 
 func main() {
 	setupTeams()
-	go handlePlayerChannel(playerChan)
+	go handleOffPlayerChannel(offPlayerChan)
+	go handleDefPlayerChannel(defPlayerChan)
 
 	fmt.Println("Ready for kickoff!")
 	fmt.Println("The", stallions.TeamName, "vs The", mustangs.TeamName, ". Should be a good one!")
@@ -64,9 +66,37 @@ func main() {
 
 }
 
-func handlePlayerChannel(players <-chan Player) {
+func handleOffPlayerChannel(players <-chan Player) {
 	for player := range players {
-		fmt.Println(player.Name, "needs something to do")
+		switch player.OffPos {
+		case QB:
+			fmt.Println("Quarter back!")
+		case RB:
+			fmt.Println("Running back!")
+		case WR:
+			fmt.Println("Wide receivers!")
+		case OL:
+			fmt.Println("Offensive lineman!")
+		default:
+			panic("I don't know what position this is!")
+
+		}
+	}
+}
+
+func handleDefPlayerChannel(players <-chan Player) {
+	for player := range players {
+		switch player.DefPos {
+		case DL:
+			fmt.Println("Defensive line!")
+		case LB:
+			fmt.Println("Line baker!")
+		case DB:
+			fmt.Println("Defensive back!")
+		default:
+			panic("I don't know what position this is!")
+
+		}
 	}
 }
 
@@ -77,13 +107,13 @@ func snapTheBall() {
 
 func doOffense() {
 	for _, player := range stallions.Players {
-		playerChan <- player
+		offPlayerChan <- player
 	}
 }
 
 func doDefense() {
 	for _, player := range mustangs.Players {
-		playerChan <- player
+		defPlayerChan <- player
 	}
 }
 
