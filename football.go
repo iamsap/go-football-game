@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -20,12 +22,12 @@ const DB int = 6
 var offPos = map[int]int{
 	0:  QB,
 	1:  RB,
-	2:  RB,
+	2:  WR,
 	3:  WR,
 	4:  WR,
 	5:  WR,
-	6:  WR,
-	7:  WR,
+	6:  OL,
+	7:  OL,
 	8:  OL,
 	9:  OL,
 	10: OL,
@@ -47,6 +49,7 @@ var defPos = map[int]int{
 
 var offPlayerChan = make(chan Player)
 var defPlayerChan = make(chan Player)
+var isHiked = false
 
 func main() {
 	setupTeams()
@@ -54,7 +57,7 @@ func main() {
 	go handleDefPlayerChannel(defPlayerChan)
 
 	fmt.Println("Ready for kickoff!")
-	fmt.Println("The", stallions.TeamName, "vs The", mustangs.TeamName, ". Should be a good one!")
+	fmt.Println("The", stallions.TeamName, "vs The", mustangs.TeamName)
 
 	ticks := 0
 
@@ -66,37 +69,73 @@ func main() {
 
 }
 
+func printOffAction(player *Player) {
+	if isHiked {
+		print("!")
+	} else {
+		print(".")
+	}
+}
+func printDefAction(player *Player) {
+	if isHiked {
+		print("$")
+	} else {
+		print("-")
+	}
+}
+
 func handleOffPlayerChannel(players <-chan Player) {
 	for player := range players {
+		duration, _ := time.ParseDuration("200ms")
+		time.Sleep(duration)
+
 		switch player.OffPos {
 		case QB:
-			fmt.Println("Quarter back!")
+			print("Hike!")
+			isHiked = true
 		case RB:
-			fmt.Println("Running back!")
+			printOffAction(&player)
 		case WR:
-			fmt.Println("Wide receivers!")
+			printOffAction(&player)
 		case OL:
-			fmt.Println("Offensive lineman!")
+			printOffAction(&player)
 		default:
 			panic("I don't know what position this is!")
 
 		}
 	}
+
 }
 
 func handleDefPlayerChannel(players <-chan Player) {
 	for player := range players {
-		switch player.DefPos {
-		case DL:
-			fmt.Println("Defensive line!")
-		case LB:
-			fmt.Println("Line baker!")
-		case DB:
-			fmt.Println("Defensive back!")
-		default:
-			panic("I don't know what position this is!")
+		go doPlayerDefense(&player)
+	}
+}
 
-		}
+func doPlayerDefense(player *Player) {
+	m := sync.Mutex{}
+	m.Lock()
+
+	for !isHiked {
+		time.Sleep(time.Duration(10 * time.Millisecond))
+	}
+	m.Unlock()
+
+	duration, _ := time.ParseDuration(fmt.Sprintf("%vms", rand.Intn(100)))
+	time.Sleep(duration)
+
+	switch player.DefPos {
+
+	case DL:
+		printDefAction(player)
+	case LB:
+		printDefAction(player)
+	case DB:
+		printDefAction(player)
+	default:
+		panic("I don't know what position this is!")
+
 	}
 }
 
